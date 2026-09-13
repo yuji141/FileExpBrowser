@@ -1,0 +1,208 @@
+/* ===== タグ付け画面（メインレイアウト） ===== */
+#editCategoryList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 20px;
+  max-height: 620px;
+  overflow-y: auto;
+}
+
+/* ★中分類ブロック（列） */
+#editCategoryList > div {
+  flex: 0 0 180px;
+}
+
+/* ★カテゴリ */
+#editCategoryList label {
+  display: block;
+  padding: 4px 6px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+/* ★特別カテゴリ */
+#editCategoryList > div:first-child {
+  flex-basis: 100%;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+/* ===== フォーカス ===== */
+#editCategoryList input:focus {
+  outline: 2px solid blue;
+  outline-offset: 2px;
+}
+
+#editCategoryList label:has(input:focus) {
+  background-color: #eef;
+}
+
+/* ===== 中分類（検索画面） ===== */
+#groupList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+#groupList label {
+  display: inline-block;
+  padding: 4px 6px;
+  min-width: 140px;
+  cursor: pointer;
+}
+
+/* ===== 検索カテゴリ ===== */
+#categoryList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+#categoryList > div {
+  flex: 0 0 180px;
+}
+
+#categoryList label {
+  display: block;
+  padding: 4px 6px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+/* ===== ボタン ===== */
+button {
+  padding: 6px 12px;
+}
+
+/* ===== 入力・ボタン共通 ===== */
+input[type="text"],
+input[type="file"],
+button {
+  height: 32px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+/* ファイル入力だけ微調整（高さずれ対策） */
+input[type="file"] {
+  padding: 3px;
+}
+
+/* ボタン見た目統一 */
+button {
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+/* ===== 検索エリア揃え ===== */
+#keyword {
+  height: 32px;
+}
+
+#keyword + button,
+#keyword + button + button {
+  height: 32px;
+}
+
+/* ===== ファイル一覧 共通 ===== */
+#fileList {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* データ */
+#fileList td {
+  text-align: left;
+  padding: 4px 8px;
+  vertical-align: middle;
+}
+
+/* ヘッダー */
+#fileList th {
+  text-align: center;
+  padding: 4px 8px;
+  vertical-align: middle;
+}
+
+/* ===== 更新日列 ===== */
+#fileList th:nth-last-child(3),
+#fileList td:nth-last-child(3) {
+  width: 160px;
+  white-space: nowrap;
+}
+
+/* ===== 拡張子列 ===== */
+#fileList th:nth-last-child(2),
+#fileList td:nth-last-child(2) {
+  width: 70px;
+  white-space: nowrap;
+}
+
+/* ===== カテゴリ列 ===== */
+#fileList th:last-child,
+#fileList td:last-child {
+  width: 90px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#downloadArea a {
+  display: inline-block;
+  padding: 6px 10px;
+  background-color: #e6f2ff;
+}
+
+/* ===== ファイル一覧ヘッダー固定 ===== */
+#fileList th {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 1;
+}
+
+/* ===== タブ固定 ===== */
+#tabs {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 100;
+}
+
+/* ===== ヘッダー全体固定 ===== */
+#headerArea {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 100;
+}
+
+/* ===== ファイル一覧の見やすさ改善 ===== */
+
+/* データ */
+#fileList td {
+  text-align: left;
+  padding: 4px 8px;
+  vertical-align: middle;
+}
+
+/* ヘッダー */
+#fileList th {
+  text-align: center;
+  padding: 4px 8px;
+  vertical-align: middle;
+}
+
+/* ===== コマンドバー固定 ===== */
+#commandBar {
+  position: sticky;
+  top: 90px;
+  background: #fff;
+  z-index: 50;
+  padding: 8px 0;
+  border-bottom: 1px solid #ccc;
+}

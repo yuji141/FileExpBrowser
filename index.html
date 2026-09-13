@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ファイル管理Web</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div id="headerArea">
+      <h2>ファイル管理</h2>
+
+      <!-- ===== 画面切り替え ===== -->
+      <div id="tabs" style="display: flex; border-bottom: 1px solid #ccc">
+        <!-- 検索タブ -->
+        <div
+          id="tabSearch"
+          onclick="showSearchPage()"
+          style="
+            padding: 8px 20px;
+            cursor: pointer;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            margin-right: 4px;
+          "
+        >
+          検索
+        </div>
+
+        <!-- タグ付けタブ -->
+        <div
+          id="tabEdit"
+          onclick="showEditPage()"
+          style="
+            padding: 8px 20px;
+            cursor: pointer;
+            background: #eee;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            margin-right: 4px;
+          "
+        >
+          タグ付け
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 検索画面 ===== -->
+    <div id="searchPage">
+      <h2>検索</h2>
+
+      <details style="margin-bottom: 10px">
+        <summary style="cursor: pointer; font-weight: bold">使い方</summary>
+
+        <div style="margin-top: 6px; line-height: 1.6">
+          ① キーワードを入力（任意）<br />
+          ② 中分類で範囲を選択（複数可）<br />
+          ③ カテゴリで絞り込み（AND条件）
+        </div>
+      </details>
+
+      <!-- ===== データ読み込みエリア ===== -->
+      <div id="dataLoadArea">
+        <!-- ローカル用 -->
+        <div id="localLoadArea" style="display: none">
+          <p style="color: #666; font-size: 12px; margin-bottom: 6px">
+            ※Excelでデータ更新後、「ファイル選択」→「ファイル読み込み」を実行してください
+          </p>
+          <input type="file" id="jsonFileInput" multiple accept=".json" />
+          <button id="loadButton">ファイル読み込み</button>
+        </div>
+
+        <!-- サーバ用 -->
+        <div id="serverLoadArea" style="display: none">
+          <p style="color: #666; font-size: 12px; margin-bottom: 6px">
+            ※Excelでデータ更新後、「データ再読み込み」ボタンを押してください
+          </p>
+          <button id="reloadButton">🔄 データ再読み込み</button>
+        </div>
+        <div
+          id="lastUpdated"
+          style="color: #666; font-size: 12px; margin-top: 4px"
+        >
+          最終更新：未読込
+        </div>
+      </div>
+
+      <!-- ===== 検索入力エリア ===== -->
+      <details open style="margin-bottom: 10px">
+        <summary style="cursor: pointer; font-weight: bold">検索条件</summary>
+
+        <div id="searchControlArea">
+          <!-- 検索方式 -->
+          <div style="margin-bottom: 6px">
+            <label>
+              <input
+                type="radio"
+                name="categorySearchMode"
+                value="and"
+                checked
+                onchange="
+                  updateSearchTypeUI();
+                  loadData();
+                "
+              />
+              AND検索
+            </label>
+
+            <label style="margin-left: 12px">
+              <input
+                type="radio"
+                name="categorySearchMode"
+                value="or"
+                onchange="
+                  updateSearchTypeUI();
+                  loadData();
+                "
+              />
+              OR検索
+            </label>
+
+            <label style="margin-left: 12px">
+              <input
+                type="radio"
+                name="categorySearchMode"
+                value="filterOr"
+                onchange="
+                  updateSearchTypeUI();
+                  loadData();
+                "
+              />
+              絞込OR検索
+            </label>
+          </div>
+
+          <!-- キーワード -->
+          <div style="display: flex; gap: 6px; align-items: center">
+            <input type="text" id="keyword" placeholder="キーワード入力" />
+            <button onclick="loadData()">検索</button>
+            <button onclick="clearSearch()">クリア</button>
+          </div>
+        </div>
+
+        <h3>中分類</h3>
+        <div id="groupList"></div>
+
+        <hr style="margin: 10px 0; border: 0; border-top: 2px solid #ccc" />
+
+        <h3>カテゴリ</h3>
+
+        <!-- 絞込OR専用 -->
+        <div
+          id="requiredCategoryArea"
+          style="
+            display: none;
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            background: #f8f8f8;
+          "
+        >
+          <div style="font-weight: bold; margin-bottom: 4px">必須カテゴリ</div>
+
+          <select
+            id="requiredCategory"
+            style="width: 300px"
+            onchange="
+              renderCategories();
+              loadData();
+            "
+          >
+            <option value="">未選択</option>
+          </select>
+        </div>
+
+        <div id="categoryList"></div>
+
+        <hr />
+
+        <h3>拡張子</h3>
+        <div id="extList"></div>
+      </details>
+
+      <div id="commandBar">
+        <h3>ファイル一覧</h3>
+
+        <input type="text" id="selectedPath" style="width: 100%" readonly />
+
+        <!-- コマンド操作 -->
+        <div style="margin-top: 6px">
+          <div style="font-size: 12px; color: #666">
+            コマンド操作（PowerShell用）
+          </div>
+
+          <div
+            style="
+              display: flex;
+              gap: 10px;
+              align-items: center;
+              flex-wrap: wrap;
+              margin-top: 4px;
+            "
+          >
+            <button onclick="copyPath()">開くCmd</button>
+            <button onclick="copyDeleteCommand()">削除Cmd</button>
+            <button onclick="copyRenameCommand()">名前変更Cmd</button>
+          </div>
+        </div>
+
+        <!-- タグ操作 -->
+        <div style="margin-top: 8px">
+          <div style="font-size: 12px; color: #666">タグ操作</div>
+
+          <div
+            id="tagInstruction"
+            style="margin-top: 6px; color: #666; display: none"
+          >
+            タグ付けするファイルにチェックを入れて「タグ付けへ」を押してください
+          </div>
+
+          <div
+            style="
+              display: flex;
+              gap: 10px;
+              align-items: center;
+              flex-wrap: wrap;
+              margin-top: 4px;
+            "
+          >
+            <button onclick="toggleMode()">タグ付けモード</button>
+
+            <button onclick="moveToEdit()" style="display: none">
+              タグ付けへ
+            </button>
+
+            <span id="selectedCount" style="margin-left: 10px">
+              選択中：0件
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div id="copyMessage" style="margin-top: 4px"></div>
+      <div
+        id="syncWarning"
+        style="margin-top: 6px; color: red; font-size: 12px"
+      ></div>
+      <div
+        id="excelPath"
+        style="color: #666; font-size: 12px; margin-top: 4px"
+      ></div>
+
+      <div
+        id="operationLog"
+        style="margin-top: 10px; font-size: 12px; color: #555"
+      ></div>
+
+      <div
+        id="resultCount"
+        style="margin-top: 6px; font-weight: bold; color: #333"
+      >
+        検索結果：0件
+      </div>
+
+      <div style="border: 1px solid #ccc">
+        <table
+          id="fileList"
+          border="1"
+          style="width: 100%; border-collapse: collapse"
+        >
+          <thead>
+            <tr>
+              <th
+                id="checkHeader"
+                style="width: 40px; text-align: center; display: none"
+              >
+                <input
+                  type="checkbox"
+                  id="selectAllCheckbox"
+                  onclick="toggleSelectAll(this)"
+                />
+              </th>
+
+              <th onclick="changeSort('name')" style="cursor: pointer">
+                ファイル名 <span id="sort-name"></span>
+              </th>
+
+              <th onclick="changeSort('updatedAt')" style="cursor: pointer">
+                更新日 <span id="sort-updatedAt"></span>
+              </th>
+
+              <th onclick="changeSort('ext')" style="cursor: pointer">
+                拡張子 <span id="sort-ext"></span>
+              </th>
+
+              <th onclick="changeSort('category')" style="cursor: pointer">
+                カテゴリ <span id="sort-category"></span>
+              </th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== タグ付け画面 ===== -->
+    <div id="editPage" style="display: none">
+      <h2>タグ付け</h2>
+      <div style="color: gray; margin-bottom: 8px">
+        Enterでタグ設定 / ↑↓で選択 / Spaceでチェック
+      </div>
+
+      <ul id="editFileList"></ul>
+
+      <!-- ★タグ付け用は別IDにする -->
+      <div
+        id="editFileName"
+        style="
+          font-weight: bold;
+          margin-bottom: 10px;
+          padding: 6px 10px;
+          background-color: #ffffff;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        "
+      ></div>
+      <input type="hidden" id="editSelectedPath" />
+
+      <div id="tagWarning" style="color: red; display: none"></div>
+
+      <div style="margin-top: 10px; margin-bottom: 10px">
+        <div>
+          <label>
+            <input
+              type="radio"
+              name="tagApplyMode"
+              value="overwrite"
+              checked
+              onchange="updateTagWarning()"
+            />
+            上書き
+          </label>
+
+          <label style="margin-left: 10px">
+            <input
+              type="radio"
+              name="tagApplyMode"
+              value="append"
+              onchange="updateTagWarning()"
+            />
+            追加
+          </label>
+
+          <div style="font-size: 12px; color: #666; margin-top: 2px">
+            上書き：既存タグを置き換える<br />
+            追加：既存タグを残したまま追加する
+          </div>
+        </div>
+
+        <div
+          style="display: flex; gap: 10px; align-items: center; margin-top: 8px"
+        >
+          <button id="applyTagsBtn" onclick="applyTags()">タグ設定</button>
+
+          <button onclick="exportTagsToJson()">Excel反映用JSON出力</button>
+
+          <button onclick="cancelTagEdit()">キャンセル</button>
+        </div>
+      </div>
+
+      <div id="editCategoryList"></div>
+      <div
+        id="tagCount"
+        style="margin-top: 4px; font-size: 12px; color: #666"
+      ></div>
+
+      <div
+        id="logArea"
+        style="
+          margin-top: 10px;
+          max-height: 150px;
+          overflow-y: auto;
+          border: 1px solid #ccc;
+          padding: 6px;
+        "
+      ></div>
+
+      <div id="tagResult"></div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
