@@ -11,7 +11,7 @@
 
 ## Demo
 
-https://yuji141.github.io/FileExpBrowser/---
+https://yuji141.github.io/FileExpBrowser/
 
 ---
 
